@@ -1,0 +1,37 @@
+name: Step 4 Build & Deploy SPA App On new Release
+on:
+    release:
+      types: [created]  
+env:
+  APP_NAME: Deploy spa
+  TAG: ${{ github.sha }}
+  BRANCH: ${{ github.ref }}
+jobs:
+  "aws-secure-access":
+    name: "checkout and build"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required to use OIDC authentication
+      contents: read # required to checkout the code from the repo
+    steps:
+      - name: Establish secure session to AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+         role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
+         role-duration-seconds: 900
+         aws-region: ${{ secrets.AWS_REGION }}
+      - uses: actions/checkout@v2
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'dist' folder
+        run: |
+          yarn install
+          yarn build
+      - name: Deploy to CDN
+        run: |
+          ls ./build
+          aws s3 sync ./build ${{ secrets.S3_BUCKET }} --delete --exact-timestamps --cache-control max-age=86400
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CDN_ID }} --paths '/*'
+      - run: echo "This job's status is ${{ job.status }}."

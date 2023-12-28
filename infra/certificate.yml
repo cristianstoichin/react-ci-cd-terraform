@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates a certificate. When using it with CDN make sure to ALWAYS run this in US-EAST-1.
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: HostedZoneId from Route53
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: Must be a valid DNS zone name.
+  HostedZoneName:
+    Type: String
+    Description: The DNS name of an existing Amazon Route 53 hosted zone
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: Must be a valid DNS zone name.
+  SubDomainName:
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: Must be a valid subdomain name
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+      DomainValidationOptions:
+        - DomainName: !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+Outputs:
+  CertificateARN:
+    Value: !Ref Certificate
+    Description: Certificate ARN

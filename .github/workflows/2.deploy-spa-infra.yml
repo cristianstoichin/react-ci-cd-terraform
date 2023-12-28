@@ -1,0 +1,60 @@
+name: Step 2 Deploy SPA Infra
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice 
+        description: Action
+        required: true
+        options: 
+        - Validate
+        - Deploy
+        - Destroy
+      region:
+        type: choice 
+        description: Action
+        required: true
+        options: 
+        - us-east-1
+        - us-west-2
+env:
+  APP_NAME: Deploy spa
+  TAG: ${{ github.sha }}
+  BRANCH: ${{ github.ref }}
+jobs:
+  "aws-secure-access":
+    name: "checkout and build"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required to use OIDC authentication
+      contents: read # required to checkout the code from the repo
+    steps:
+      - name: Establish secure session to AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+         role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
+         role-duration-seconds: 900
+         aws-region: ${{ github.event.inputs.region }}
+      - uses: actions/checkout@v2
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Deploy resource
+        run: |
+          if [ "${{ github.event.inputs.action }}" = "Validate" ]; then
+            aws cloudformation validate-template --template-body file://infra/spa.yml --region ${{ github.event.inputs.region }} --no-paginate
+          fi
+        
+          if [ "${{ github.event.inputs.action }}" = "Deploy" ]; then
+            aws cloudformation deploy \
+            --template-file ./infra/spa.yml \
+            --stack-name react-spa-stack \
+            --parameter-overrides AcmCertificateArn=${{ secrets.CertArn }} HostedZoneId=${{ secrets.HostedZoneId }} HostedZoneName=${{ secrets.HostedZoneName }} SubDomainName=react-demo \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+          fi
+
+          if [ "${{ github.event.inputs.action }}" = "Destroy" ]; then
+            aws cloudformation delete-stack --stack-name react-spa-stack
+          fi
+      - run: echo "This job's status is ${{ job.status }}."

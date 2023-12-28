@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates the required infra to host a SPA application in S3 and fronts it with an AWS CDN.
+Parameters:
+  HostedZoneName:
+    Type: String
+    Description: The DNS name of an existing Amazon Route 53 hosted zone
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: must be a valid DNS zone name.
+  AcmCertificateArn:
+    Type: String
+    Description: the Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate.
+    AllowedPattern: "arn:aws:acm:.*"
+  AllowedHeaders:
+    Type: String
+    Description: List of comma separated allowed headers.
+    Default: '*'
+  AllowedMethods:
+    Type: String
+    Description: List of comma separated allowed methods.
+    Default: GET
+  AllowedOrigins:
+    Type: String
+    Description: List of comma separated allowed methods.
+    Default: '*'
+  SubDomainName:
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    ConstraintDescription: must be a valid S3 bucket name.
+Resources:
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: !Split [ ',', !Ref 'AllowedHeaders' ]
+            AllowedMethods: !Split [ ',', !Ref 'AllowedMethods' ]
+            AllowedOrigins: !Split [ ',', !Ref 'AllowedOrigins' ]
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: My CloudFront Origin Access Identity
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowCloudFrontAccess
+          Effect: Allow
+          Principal:
+            AWS: !Join ['', ['arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ', !Ref CloudFrontOriginAccessIdentity]]
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref WebsiteBucket, '/*']]
+  WebsiteCloudfront:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+    - WebsiteBucket
+    Properties:
+      DistributionConfig:
+        Comment: Cloudfront Distribution pointing to S3 bucket
+        Aliases:
+        - !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+        Origins:
+        - Id: S3PrivateBucketOrigin
+          DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+          S3OriginConfig:
+            OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref CloudFrontOriginAccessIdentity]]
+        Enabled: true
+        HttpVersion: 'http2'
+        DefaultRootObject: index.html
+        Aliases:
+        - !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3PrivateBucketOrigin
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        CustomErrorResponses: 
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCachingMinTTL: 300
+            ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+  WebsiteDNSName:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'HostedZoneName', .]]
+      Comment: !Join [ '', ['CNAME redirect custom name to CloudFront distribution for', !Ref 'SubDomainName']]
+      Name: !Join ['', [!Ref 'SubDomainName', ., !Ref 'HostedZoneName']]
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+      - !Join ['', [!GetAtt [WebsiteCloudfront, DomainName]]]
+Outputs:
+  BucketName:
+    Value: !Ref 'WebsiteBucket'
+    Description: Name of S3 bucket to hold website content
+  CloudfrontEndpoint:
+    Value: !GetAtt [WebsiteCloudfront, DomainName]
+    Description: Endpoint for Cloudfront distribution
