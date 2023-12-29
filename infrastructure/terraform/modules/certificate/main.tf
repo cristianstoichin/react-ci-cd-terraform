@@ -7,9 +7,6 @@ resource "aws_acm_certificate" "cert" {
   lifecycle {
     create_before_destroy = true
   }
-  depends_on = [
-    aws_api_gateway_rest_api.api
-  ]
 }
 
 resource "aws_route53_record" "cert_validation_dns" {
@@ -20,7 +17,7 @@ resource "aws_route53_record" "cert_validation_dns" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   ttl = 300
   depends_on = [
-    aws_acm_certificate.cert, aws_api_gateway_rest_api.api
+    aws_acm_certificate.cert
   ]
 }
 
