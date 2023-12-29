@@ -24,7 +24,3 @@ variable "region" {
   description = "AWS region to use"
   type        = string
 }
-
-variable "tags" {
-  type = map(any)
-}
