@@ -15,7 +15,7 @@ data "aws_caller_identity" "current" {}
 #----------------------------------------------------------
 
 module "aws_certificate" {
-  source = "./modules/certificate"
+  source = "../infra/terraform/modules/certificate"
 
   sub_domain       = var.sub_domain
   hosted_zone_name = var.hosted_zone_name
