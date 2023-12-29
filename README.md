@@ -21,7 +21,7 @@ Follow these [steps](/README-App.md) to run the project locally.
 
 ## Continuous Integration and Deployment
 
-Infrastructure details [here](/infra/readme.md).
+Infrastructure details [here](/infrastructure/readme.md).
 
 CI-CD details [here](/.github/workflows/readme.md).
 
