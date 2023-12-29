@@ -7,6 +7,11 @@ variable "bucket_name" {
   type = string
 }
 
+variable "environment" {
+  description = "Environment name to use"
+  type        = string
+}
+
 variable "hosted_zone_name" {
   type = string
 }
