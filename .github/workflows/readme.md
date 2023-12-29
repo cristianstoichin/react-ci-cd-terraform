@@ -30,9 +30,9 @@ Before running the Job (manual trigger), you must first have the following Githu
 2. `DEPLOYMENT_ROLE_ARN`
    - This must be an existing Role in your AWS account that will allow the job to run the `aws cloudformation deploy` command.
       - Typically, this role is granted Admin permissions in AWS. However, be aware that this could pose a security risk. AWS recommends using the least privileged permissions for enhanced security.
-3. `HostedZoneId` and `HostedZoneName`
+3. `hosted_zone_name`
    - This is a pre-requisite before running the deployment. You must have a Route53 hosted zone (public) that will be used to validate the ssl certificate.
-4. `SubDomainName' this can also be a secret but in this example I simply hardcoded the value. This must be your desired subdomain name for the website. Ex: react-demo.  
+4. `sub_domain' this can also be a secret but in this example I simply hardcoded the value. This must be your desired subdomain name for the website. Ex: react-terraform.  
 
 ### [build-deploy-spa-app.yml](3.build-deploy-spa-app.yml)
 
