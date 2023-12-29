@@ -4,7 +4,7 @@ This directory includes the 3 Github actions jobs that can be used to deploy the
 
 ### [deploy-certificate.yml](1.deploy-certificate.yml)
 
-The Github Action job allows you to either Validate, Deploy or Destroy the cloudformation template. You must also select a region where you want it to be deployed. In this case, because we want to use the Certificate with a Cloudfront distribution, `the certificate MUST be deployed to us-east-1` (global). 
+The Github Action job allows you to either Plan, Deploy or Destroy the Terraform template. You must also setup the region where you want it to be deployed in [dev.tfvars](https://github.com/cristianstoichin/react-ci-cd-terraform/blob/main/infrastructure/terraform/1.cert/variables/dev.tfvars#L1). In this case, because we want to use the Certificate with a Cloudfront distribution, `the certificate MUST be deployed to us-east-1` (global). 
 
 This Github Action is designed to create a new SSL certificate in AWS Certificate Manager, which will enable SSL connectivity for our website. Remember --> `us-east-1` 
 
