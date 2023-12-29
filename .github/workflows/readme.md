@@ -19,9 +19,9 @@ Before running the Job (manual trigger), you must first have the following Githu
 
 ### [deploy-spa-infra.yml](2.deploy-spa-infra.yml)
 
-The Github Action job allows you to either Validate, Deploy or Destroy the cloudformation template. You must also select a region where you want it to be deployed. 
+The Github Action job allows you to either Plan, Deploy or Destroy the terraform template. ou must also setup the region where you want it to be deployed in [dev.tfvars](https://github.com/cristianstoichin/react-ci-cd-terraform/blob/main/infrastructure/terraform/2.spa/variables/dev.tfvars#L1).
 
-This Github Action is designed to create the resources defined [here](https://github.com/cristianstoichin/react_ci_cd_clouformation/blob/main/infra/readme.md#spayml)
+This Github Action is designed to create the resources defined [here](https://github.com/cristianstoichin/react-ci-cd-terraform/tree/main/infrastructure#spa-template)
 
 Before running the Job (manual trigger), you must first have the following Github Repo Secrets setup:
 
