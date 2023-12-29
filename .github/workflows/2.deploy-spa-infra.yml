@@ -45,7 +45,6 @@ jobs:
         run: |
           cd infrastructure/terraform/2.spa/variables
           sed -i 's/{CERT_ARN}/${{ secrets.AWS_REGION }}/' dev.tfvars
-          cat dev.tfvars
       - name: Deploy SPA Infra
         run: |
           ls 
