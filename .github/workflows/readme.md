@@ -25,14 +25,14 @@ This Github Action is designed to create the resources defined [here](https://gi
 
 Before running the Job (manual trigger), you must first have the following Github Repo Secrets setup:
 
-1. `AcmCertificateArn`
+1. `CERT_ARN`
    - This is the ARN (Amazon Resource Name) of the SSL certificate that should have been generated following the execution of the previous GitHub Actions job.
 2. `DEPLOYMENT_ROLE_ARN`
    - This must be an existing Role in your AWS account that will allow the job to run the `aws cloudformation deploy` command.
       - Typically, this role is granted Admin permissions in AWS. However, be aware that this could pose a security risk. AWS recommends using the least privileged permissions for enhanced security.
 3. `hosted_zone_name`
    - This is a pre-requisite before running the deployment. You must have a Route53 hosted zone (public) that will be used to validate the ssl certificate.
-4. `sub_domain' this can also be a secret but in this example I simply hardcoded the value. This must be your desired subdomain name for the website. Ex: react-terraform.  
+4. `bucket_name' this can also be a secret but in this example I simply hardcoded the value. This must be your desired subdomain name for the website. Ex: react-terraform.  
 
 ### [build-deploy-spa-app.yml](3.build-deploy-spa-app.yml)
 
@@ -40,12 +40,11 @@ The Github Action job allows you to manually `Deploy` a new version of the SPA r
 
 Before running the Job (manual trigger), you must first have the following Github Repo Secrets setup:
 
-
 1. `DEPLOYMENT_ROLE_ARN`
    - This must be an existing Role in your AWS account that will allow the job to run the `aws cloudformation deploy` command.
       - Typically, this role is granted Admin permissions in AWS. However, be aware that this could pose a security risk. AWS recommends using the least privileged permissions for enhanced security.
 2. `S3_BUCKET`
-   - This is in the following format: `s3://{bucket-name}}`. In my case is s3://react-demo.dash-demo.click
+   - This is in the following format: `s3://{bucket-name}}`. In my case is s3://react-terraform.dash-demo.click
 3. `CDN_ID`
    - This is the AWS Cloudfront Distribution ID that you can retrieve after the `deploy-spa-infra.yml` completes successfully.
 
