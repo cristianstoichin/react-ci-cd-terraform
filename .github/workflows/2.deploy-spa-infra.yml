@@ -1,24 +1,23 @@
-name: Step 2 Deploy SPA Infra
+name: Step 2 Deploy Spa Infra
 on:
   workflow_dispatch:
     inputs:
-      action:
+      environment_file:
         type: choice 
-        description: Action
+        description: Environment
         required: true
         options: 
-        - Validate
+        - dev
+      name:
+        type: choice
+        description: Terraform Action type
+        required: true
+        options: 
+        - Plan
         - Deploy
         - Destroy
-      region:
-        type: choice 
-        description: Action
-        required: true
-        options: 
-        - us-east-1
-        - us-west-2
 env:
-  APP_NAME: Deploy spa
+  APP_NAME: Deploy_Certificate
   TAG: ${{ github.sha }}
   BRANCH: ${{ github.ref }}
 jobs:
@@ -31,30 +30,38 @@ jobs:
     steps:
       - name: Establish secure session to AWS
         uses: aws-actions/configure-aws-credentials@v1
-        with:
+        with: 
          role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
          role-duration-seconds: 900
-         aws-region: ${{ github.event.inputs.region }}
+         aws-region: ${{ secrets.AWS_REGION }}
       - uses: actions/checkout@v2
       - name: Install Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: Deploy resource
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+      - name: Insert Secret
         run: |
-          if [ "${{ github.event.inputs.action }}" = "Validate" ]; then
-            aws cloudformation validate-template --template-body file://infra/spa.yml --region ${{ github.event.inputs.region }} --no-paginate
+          cd infrastructure/terraform/2.spa/variables
+          sed -i 's/{CERT_ARN}/${{ secrets.CERT_ARN }}/g' dev.tfvars
+      - name: Deploy Certificate
+        run: |
+          ls 
+          #Initialize the terraform provider with the correct State file per environment. The state is stored in a specific subfolder in an S3 bucket.
+          cd infrastructure/terraform/2.spa
+          terraform init -backend-config="config/backend-${{ github.event.inputs.environment_file }}.hcl"
+          
+          #Run the plan command for the current template.
+          if [ "${{ github.event.inputs.name }}" = "Plan" ]; then
+            terraform plan -var-file="variables/${{ github.event.inputs.environment_file }}.tfvars"
           fi
-        
-          if [ "${{ github.event.inputs.action }}" = "Deploy" ]; then
-            aws cloudformation deploy \
-            --template-file ./infra/spa.yml \
-            --stack-name react-spa-stack \
-            --parameter-overrides AcmCertificateArn=${{ secrets.CertArn }} HostedZoneId=${{ secrets.HostedZoneId }} HostedZoneName=${{ secrets.HostedZoneName }} SubDomainName=react-demo \
-            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+          
+          #Run the terraform deploy command.
+          if [ "${{ github.event.inputs.name }}" = "Deploy" ]; then
+            terraform apply -var-file="variables/${{ github.event.inputs.environment_file }}.tfvars" -auto-approve
           fi
-
-          if [ "${{ github.event.inputs.action }}" = "Destroy" ]; then
-            aws cloudformation delete-stack --stack-name react-spa-stack
+          if [ "${{ github.event.inputs.name }}" = "Destroy" ]; then
+            terraform destroy -var-file="variables/${{ github.event.inputs.environment_file }}.tfvars" -auto-approve
           fi
       - run: echo "This job's status is ${{ job.status }}."
