@@ -44,7 +44,8 @@ jobs:
       - name: Insert Secret
         run: |
           cd infrastructure/terraform/2.spa/variables
-          sed -i 's/{CERT_ARN}/${{ secrets.CERT_ARN }}/' dev.tfvars
+          sed -i 's/{CERT_ARN}/${{ secrets.CERT_ARN }}/g' dev.tfvars
+          cat dev.tfvars
       - name: Deploy SPA Infra
         run: |
           ls 
