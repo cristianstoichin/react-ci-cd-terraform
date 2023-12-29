@@ -44,9 +44,9 @@ jobs:
       - name: Insert Secret
         run: |
           cd infrastructure/terraform/2.spa/variables
-          sed -i 's/{CERT_ARN}/aaa/' dev.tfvars
+          sed -i 's/{CERT_ARN}/${{ secrets.AWS_REGION }}/' dev.tfvars
           cat dev.tfvars
-      - name: Deploy Certificate
+      - name: Deploy SPA Infra
         run: |
           ls 
           #Initialize the terraform provider with the correct State file per environment. The state is stored in a specific subfolder in an S3 bucket.
