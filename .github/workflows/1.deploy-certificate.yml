@@ -8,6 +8,7 @@ on:
         required: true
         options: 
         - dev
+        - dev1
       name:
         type: choice
         description: Terraform Action type
