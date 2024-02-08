@@ -60,6 +60,11 @@ resource "aws_cloudfront_distribution" "cloud_front" {
   http_version        = "http2"
   price_class         = "PriceClass_100"
 
+  custom_error_response = {
+    error_code         = "404"
+    response_page_path = "index.html"
+  }
+
   origin {
     domain_name = aws_s3_bucket.cdn_bucket.bucket_regional_domain_name
     origin_access_control_id = "${aws_cloudfront_origin_access_control.oac.id}"
