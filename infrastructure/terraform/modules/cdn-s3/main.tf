@@ -1,15 +1,15 @@
 data "aws_route53_zone" "hosted_zone" {
-  name         =  var.hosted_zone_name
+  name = var.hosted_zone_name
 }
 
 resource "aws_s3_bucket" "cdn_bucket" {
-  bucket = join("", [var.bucket_name, ".", var.hosted_zone_name])
+  bucket        = join("", [var.bucket_name, ".", var.hosted_zone_name])
   force_destroy = true
   tags          = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "block" {
-  bucket = aws_s3_bucket.cdn_bucket.id
+  bucket                  = aws_s3_bucket.cdn_bucket.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -30,7 +30,7 @@ resource "aws_cloudfront_distribution" "cloud_front" {
   comment = "Cloudfront Distribution pointing to S3 bucket"
 
   aliases = [join("", [var.bucket_name, ".", var.hosted_zone_name])]
-  
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -60,15 +60,20 @@ resource "aws_cloudfront_distribution" "cloud_front" {
   http_version        = "http2"
   price_class         = "PriceClass_100"
 
-  custom_error_response = {
+  custom_error_response {
     error_code         = "404"
     response_page_path = "index.html"
   }
 
+  custom_error_response {
+    error_code         = "504"
+    response_page_path = "index.html"
+  }
+
   origin {
-    domain_name = aws_s3_bucket.cdn_bucket.bucket_regional_domain_name
-    origin_access_control_id = "${aws_cloudfront_origin_access_control.oac.id}"
-    origin_id   = "${var.bucket_name}-origin"
+    domain_name              = aws_s3_bucket.cdn_bucket.bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
+    origin_id                = "${var.bucket_name}-origin"
   }
 
   viewer_certificate {
@@ -94,7 +99,7 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
         Effect    = "Allow"
         Principal = { Service = "cloudfront.amazonaws.com" }
         Action    = "s3:GetObject"
-        Resource = "${aws_s3_bucket.cdn_bucket.arn}/*"
+        Resource  = "${aws_s3_bucket.cdn_bucket.arn}/*"
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = "${aws_cloudfront_distribution.cloud_front.arn}"
