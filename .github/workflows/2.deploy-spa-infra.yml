@@ -50,7 +50,8 @@ jobs:
           fi
           if [ "${{ github.event.inputs.environment_file }}" = "dev1" ]; then
             sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN1 }}"\n/' dev1.tfvars
-          ficat dev1.tfvars
+          fi
+          cat dev1.tfvars
           terraform fmt
       - name: Deploy SPA Infra
         run: |
