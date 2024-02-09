@@ -45,8 +45,12 @@ jobs:
       - name: Insert Secret
         run: |
           cd infrastructure/terraform/2.spa/variables
-          sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN }}"\n/' dev.tfvars
-          cat dev.tfvars
+          if [ "${{ github.event.inputs.environment_file }}" = "dev" ]; then
+            sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN }}"\n/' dev.tfvars
+          fi
+          if [ "${{ github.event.inputs.environment_file }}" = "dev1" ]; then
+            sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN1 }}"\n/' dev1.tfvars
+          fi
           terraform fmt
       - name: Deploy SPA Infra
         run: |
