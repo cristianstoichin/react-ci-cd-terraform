@@ -47,12 +47,12 @@ jobs:
           cd infrastructure/terraform/2.spa/variables
           if [ "${{ github.event.inputs.environment_file }}" = "dev" ]; then
             sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN }}"\n/' dev.tfvars
+            terraform fmt dev.tfvars
           fi
           if [ "${{ github.event.inputs.environment_file }}" = "dev1" ]; then
             sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN1 }}"\n/' dev1.tfvars
+            terraform fmt dev1.tfvars
           fi
-          cat dev1.tfvars
-          terraform fmt
       - name: Deploy SPA Infra
         run: |
           ls 
