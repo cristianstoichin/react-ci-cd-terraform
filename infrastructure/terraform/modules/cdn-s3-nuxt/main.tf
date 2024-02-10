@@ -25,7 +25,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 }
 
 resource "aws_cloudfront_distribution" "cloud_front" {
-  depends_on = [aws_s3_bucket.cdn_bucket, aws_cloudfront_origin_access_control.oac, aws_cloudfront_distribution.cloud_front]
+  depends_on = [aws_s3_bucket.cdn_bucket, aws_cloudfront_origin_access_control.oac, aws_cloudfront_function.rewrite_request_static_function]
 
   comment = "Cloudfront Distribution pointing to S3 bucket"
 
