@@ -25,7 +25,7 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 }
 
 resource "aws_cloudfront_distribution" "cloud_front" {
-  depends_on = [aws_s3_bucket.cdn_bucket, aws_cloudfront_origin_access_control.oac]
+  depends_on = [aws_s3_bucket.cdn_bucket, aws_cloudfront_origin_access_control.oac, aws_cloudfront_distribution.cloud_front]
 
   comment = "Cloudfront Distribution pointing to S3 bucket"
 
@@ -53,6 +53,10 @@ resource "aws_cloudfront_distribution" "cloud_front" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+    function_association {
+      event_type = "viewer-request"
+      function_arn = aws_cloudfront_function.rewrite_request_static_function.arn
+    }
   }
 
   default_root_object = "index.html"
@@ -78,6 +82,7 @@ resource "aws_cloudfront_distribution" "cloud_front" {
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
+
   tags = var.tags
 }
 
@@ -105,6 +110,25 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
       }
     ]
   })
+}
+
+resource "aws_cloudfront_function" "rewrite_request_static_function" {
+  name    = "${aws_cloudfront_distribution.example.id}-req-static"
+  runtime = "cloudfront-js-2.0"
+  publish = true
+
+  code = <<-EOF
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri;
+      if (uri.endsWith('/')) {
+          request.uri += 'index.html';
+      } else if (!uri.includes('.')) {
+          request.uri += '/index.html';
+      }
+      return request;
+    }
+  EOF
 }
 
 resource "aws_route53_record" "cdn_route" {
