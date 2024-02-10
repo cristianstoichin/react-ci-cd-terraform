@@ -1,4 +1,4 @@
-name: Step 4 Build & Deploy SPA App On new Release
+name: Step 5 Build & Deploy SPA App On new Release
 on:
     release:
       types: [created]  

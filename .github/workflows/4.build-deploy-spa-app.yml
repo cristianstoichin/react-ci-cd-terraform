@@ -1,4 +1,4 @@
-name: Step 3 Build & Deploy SPA App
+name: Step 4 Build & Deploy SPA App
 on:
   workflow_dispatch:
     inputs:
