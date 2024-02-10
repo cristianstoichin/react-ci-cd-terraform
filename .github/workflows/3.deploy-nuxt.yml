@@ -8,7 +8,6 @@ on:
         required: true
         options: 
         - dev
-        - dev1
       name:
         type: choice
         description: Terraform Action type
@@ -44,20 +43,14 @@ jobs:
         uses: hashicorp/setup-terraform@v1
       - name: Insert Secret
         run: |
-          cd infrastructure/terraform/2.spa/variables
-          if [ "${{ github.event.inputs.environment_file }}" = "dev" ]; then
-            sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN }}"\n/' dev.tfvars
-            terraform fmt dev.tfvars
-          fi
-          if [ "${{ github.event.inputs.environment_file }}" = "dev1" ]; then
-            sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN1 }}"\n/' dev1.tfvars
-            terraform fmt dev1.tfvars
-          fi
+          cd infrastructure/terraform/3.nuxt/variables
+          sed -i 's/{CERT_ARN}/"${{ secrets.CERT_ARN }}"\n/' dev.tfvars
+          terraform fmt dev.tfvars
       - name: Deploy SPA Infra
         run: |
           ls 
           #Initialize the terraform provider with the correct State file per environment. The state is stored in a specific subfolder in an S3 bucket.
-          cd infrastructure/terraform/2.spa
+          cd infrastructure/terraform/3.nuxt
           terraform init -backend-config="config/backend-${{ github.event.inputs.environment_file }}.hcl"
           
           #Run the plan command for the current template.
