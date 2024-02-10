@@ -113,7 +113,7 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 }
 
 resource "aws_cloudfront_function" "rewrite_request_static_function" {
-  name    = "${aws_cloudfront_distribution.example.id}-req-static"
+  name    = "${aws_cloudfront_distribution.cloud_front.id}-req-static"
   runtime = "cloudfront-js-2.0"
   publish = true
 
