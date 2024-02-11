@@ -118,14 +118,19 @@ resource "aws_cloudfront_function" "rewrite_request_static_function" {
   publish = true
 
   code = <<-EOF
-    function handler(event) {
-      var request = event.request;
-      var uri = request.uri;
+    async function handler(event) {
+      const request = event.request;
+      const uri = request.uri;
+      
+      // Check whether the URI is missing a file name.
       if (uri.endsWith('/')) {
           request.uri += 'index.html';
-      } else if (!uri.includes('.')) {
+      } 
+      // Check whether the URI is missing a file extension.
+      else if (!uri.includes('.')) {
           request.uri += '/index.html';
       }
+
       return request;
     }
   EOF
