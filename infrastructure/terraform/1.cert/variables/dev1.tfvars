@@ -1,5 +1,5 @@
 region = "us-east-1"
 environment = "dev1"
-application = "vuxt"
-sub_domain = "vuxt"
+application = "nuxt"
+sub_domain = "nuxt"
 hosted_zone_name="dash-demo.click"
