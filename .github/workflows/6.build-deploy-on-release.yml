@@ -1,21 +1,7 @@
-name: Step 4 Build & Deploy SPA App
+name: Step 6 Build & Deploy SPA App On new Release
 on:
-  workflow_dispatch:
-    inputs:
-      action:
-        type: choice 
-        description: Action
-        required: true
-        options: 
-        - Deploy
-        - Destroy
-      region:
-        type: choice 
-        description: Action
-        required: true
-        options: 
-        - us-east-1
-        - us-west-2
+    release:
+      types: [created]  
 env:
   APP_NAME: Deploy spa
   TAG: ${{ github.sha }}
@@ -33,7 +19,7 @@ jobs:
         with:
          role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
          role-duration-seconds: 900
-         aws-region: ${{ github.event.inputs.region }}
+         aws-region: ${{ secrets.AWS_REGION }}
       - uses: actions/checkout@v2
       - name: Install Node
         uses: actions/setup-node@v3
