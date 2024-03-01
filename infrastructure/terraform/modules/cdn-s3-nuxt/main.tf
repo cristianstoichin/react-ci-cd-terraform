@@ -113,7 +113,7 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 }
 
 resource "aws_cloudfront_function" "rewrite_request_static_function" {
-  name    = "vuxt-cloud-req-static"
+  name    = "${var.bucket_name}-cloud-req-static"
   runtime = "cloudfront-js-2.0"
   publish = true
 
