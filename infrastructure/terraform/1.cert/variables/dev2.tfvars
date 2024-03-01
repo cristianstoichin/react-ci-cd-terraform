@@ -1,0 +1,5 @@
+region = "us-east-1"
+environment = "dev2"
+application = "next"
+sub_domain = "next"
+hosted_zone_name="dash-demo.click"
