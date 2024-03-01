@@ -9,6 +9,7 @@ on:
         options: 
         - dev
         - dev1
+        - dev2
       name:
         type: choice
         description: Terraform Action type
